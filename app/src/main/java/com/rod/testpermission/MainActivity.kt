@@ -1,7 +1,9 @@
 package com.rod.testpermission
 
+import android.Manifest
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.text.TextUtils
 import com.baidu.location.BDLocationListener
 import com.baidu.location.LocationClient
 import com.baidu.location.LocationClientOption
@@ -15,7 +17,7 @@ class MainActivity : AppCompatActivity() {
     private var mLocationClient: LocationClient? = null
     private val myListener = BDLocationListener() {
         location_info.text =
-            "lon=${it.longitude}, lat=${it.latitude}, locType=${it.locType} addr=${it.addrStr}, city=${it.city}"
+                "lon=${it.longitude}, lat=${it.latitude}, locType=${it.locType} addr=${it.addrStr}, city=${it.city}"
         mLocationClient?.stop()
     }
     private val mGuavaPermission by lazy { GuavaPermission(this) }
@@ -76,23 +78,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun locate() {
-        location_info.text = "start locate..."
-        mLocationClient?.start()
-//        mGuavaPermission.doWithPermission(Manifest.permission.ACCESS_FINE_LOCATION,
-//            object : GuavaPermission.PermissionResultCallback {
-//                override fun onGranted() {
-//                    location_info.text = "start locate..."
-//                    mLocationClient?.start()
-//                }
-//
-//                override fun showRequestPermissionRationale() {
-//                    location_info.text = "give me your location, it's good for you :)"
-//                }
-//
-//                override fun onDenied() {
-//                    location_info.text = "you denied location permission"
-//                }
-//
-//            })
+        mGuavaPermission.doWithPermission(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)) { permission, granted, showRational ->
+            if (!TextUtils.equals(permission, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                return@doWithPermission
+            }
+            when {
+                granted -> {
+                    location_info.text = "start locate..."
+                    mLocationClient?.start()
+                }
+                showRational -> location_info.text = "give me your location, it's good for you :)"
+                else -> location_info.text = "you denied location permission"
+            }
+        }
     }
 }

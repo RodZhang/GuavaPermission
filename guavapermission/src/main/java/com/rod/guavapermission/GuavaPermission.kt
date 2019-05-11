@@ -1,6 +1,5 @@
 package com.rod.guavapermission
 
-import android.os.Build
 import android.support.v4.app.FragmentActivity
 
 /**
@@ -10,28 +9,23 @@ import android.support.v4.app.FragmentActivity
  */
 class GuavaPermission(private val mActivity: FragmentActivity) {
     private val mFragment: PermissionFragment by lazy {
-        var fragment = mActivity.supportFragmentManager.findFragmentByTag(PermissionFragment.TAG)
+        val fragment = mActivity.fragmentManager.findFragmentByTag(PermissionFragment.TAG)
         if (fragment == null) {
             val permissionFragment = PermissionFragment()
-            mActivity.supportFragmentManager.beginTransaction()
+            mActivity.fragmentManager.beginTransaction()
                 .add(permissionFragment, PermissionFragment.TAG)
-                .commitNow()
+                .commit()
+            mActivity.fragmentManager.executePendingTransactions()
             permissionFragment
         } else {
             fragment as PermissionFragment
         }
     }
 
-    fun doWithPermission(permission: String, callback: PermissionResultCallback) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            mFragment.mPermissionCallback = callback
-            mFragment.requestPermissions(permission)
-        }
+    fun doWithPermission(permissions: Array<String>, callback: PermissionCallback) {
+        mFragment.withPermission(permissions, callback)
     }
 
-    interface PermissionResultCallback {
-        fun onGranted()
-        fun showRequestPermissionRationale()
-        fun onDenied()
-    }
 }
+
+typealias PermissionCallback = (permission: String, granted: Boolean, showRational: Boolean) -> Unit
