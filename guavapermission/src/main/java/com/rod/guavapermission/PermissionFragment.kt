@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.support.annotation.RequiresApi
+import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.util.SparseArray
 
@@ -33,10 +34,19 @@ internal class PermissionFragment : Fragment() {
             return
         }
 
+        val notGrantedPermissions = ArrayList<String>()
+        permissions.forEach {
+            if (ContextCompat.checkSelfPermission(activity, it) == PackageManager.PERMISSION_GRANTED) {
+                callback(it, true, false)
+            } else {
+                notGrantedPermissions.add(it)
+            }
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            requestPermissions(permissions, callback)
+            requestPermissions(notGrantedPermissions.toTypedArray(), callback)
         } else {
-            permissions.forEach { callback(it, true, false) }
+            notGrantedPermissions.forEach { callback(it, true, false) }
         }
     }
 
@@ -47,9 +57,9 @@ internal class PermissionFragment : Fragment() {
             return
         }
 
-        mRequestCode++
         mCallbackMap.put(mRequestCode, callback)
         requestPermissions(permissions, mRequestCode)
+        mRequestCode++
     }
 
     @RequiresApi(Build.VERSION_CODES.M)
