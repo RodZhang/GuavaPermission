@@ -52,7 +52,7 @@ internal class PermissionFragment : Fragment() {
 
     @RequiresApi(Build.VERSION_CODES.M)
     private fun requestPermissions(permissions: Array<String>, callback: PermissionCallback) {
-        if (mRequestCode + 1 >= Int.MAX_VALUE) {
+        if (mRequestCode + 1 >= Int.MAX_VALUE || permissions.isEmpty()) {
             Log.w(TAG, "ignore")
             return
         }
